@@ -1,6 +1,6 @@
 # ledgerline
 
-![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white) ![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white) ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0-D71F00?logo=sqlalchemy&logoColor=white) ![Pydantic](https://img.shields.io/badge/Pydantic-v2-E92063?logo=pydantic&logoColor=white) ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 A double-entry ledger API built with FastAPI and SQLAlchemy 2.
 
@@ -10,6 +10,16 @@ Entries are immutable once posted; mistakes are corrected with reversing
 entries. Transfers are idempotent, and every posted entry emits an
 `entry.posted` event through a transactional outbox.
 
+## Screenshots
+
+A balanced entry is posted, an unbalanced one is rejected with a 422, and a transfer retried with the same `Idempotency-Key` is replayed instead of posted twice. Run locally with docker compose, using throwaway accounts.
+
+![Balanced entry, rejected entry and idempotent transfer](docs/screenshots/transfer-flow.png)
+
+The interactive API docs at `/docs`, with `POST /entries` expanded.
+
+![Swagger UI](docs/screenshots/api-docs.png)
+
 ## Why
 
 Most payment and wallet backends eventually need a ledger, and most early
@@ -17,10 +27,10 @@ ledgers are a single `balance` column updated in place. That loses history,
 breaks under retries and makes reconciliation painful. This project is a small,
 readable reference for the rules that make a ledger trustworthy:
 
-- **Balanced by construction** — an unbalanced entry is rejected before it reaches the database.
-- **Append-only** — history is never edited, so any balance can be recomputed as of any date.
-- **Exactly-once effects over at-least-once networks** — `Idempotency-Key` on transfers.
-- **No dual writes** — state changes and their events commit in one transaction.
+- **Balanced by construction.** An unbalanced entry is rejected before it reaches the database.
+- **Append-only.** History is never edited, so any balance can be recomputed as of any date.
+- **Exactly-once effects over at-least-once networks.** Transfers take an `Idempotency-Key`.
+- **No dual writes.** State changes and their events commit in one transaction.
 
 ## Architecture
 
